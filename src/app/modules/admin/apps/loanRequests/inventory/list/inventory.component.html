@@ -1,0 +1,242 @@
+<div class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-card dark:bg-transparent">
+  <!-- Header -->
+  <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8 border-b">
+    <!-- Loader -->
+    <div class="absolute inset-x-0 bottom-0" *ngIf="isLoading">
+      <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+    </div>
+    <!-- Title -->
+    <div class="text-4xl font-extrabold tracking-tight">Loan Requests</div>
+    <!-- Actions -->
+    <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+      <!-- Search -->
+      <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:search'"></mat-icon>
+        <input matInput [formControl]="searchInputControl" [autocomplete]="'off'" [placeholder]="'Search loanRequests'" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <!-- LoanRequests list -->
+    <div class="flex flex-col flex-auto sm:mb-18 overflow-hidden sm:overflow-y-auto">
+      <ng-container *ngIf="loanRequests$ | async as loanRequests">
+        <ng-container *ngIf="loanRequests.length > 0; else noLoanRequests">
+          <div class="grid">
+            <!-- Header -->
+            <div
+              class="inventory-grid z-10 sticky top-0 grid gap-4 py-4 px-6 md:px-8 shadow text-md font-semibold text-secondary bg-gray-50 dark:bg-black dark:bg-opacity-5"
+              matSort
+              matSortDisableClear
+            >
+              <div class="hidden md:block" [mat-sort-header]="'id'">Loan ID</div>
+              <div class="hidden md:block" [mat-sort-header]="'status'">Loan Status</div>
+              <div class="hidden md:block" [mat-sort-header]="'fee'">Loan Fee</div>
+              <div class="hidden md:block" [mat-sort-header]="'amount'">Loan Amount</div>
+              <div class="hidden md:block" [mat-sort-header]="'dueDate'">Due Date</div>
+              <div class="hidden md:block" [mat-sort-header]="'createdDate'">Submission Date</div>
+              <!-- <div class="hidden md:block" [mat-sort-header]="'paymentID'">Payment Info</div>
+              <div class="hidden md:block" [mat-sort-header]="'loanProductId'">Loan Product Info</div>
+              <div class="hidden md:block" [mat-sort-header]="'userId'">Profile Info</div> -->
+              <div class="hidden md:block">Details</div>
+            </div>
+            <!-- Rows -->
+            <ng-container *ngIf="loanRequests$ | async as loanRequests">
+              <ng-container *ngFor="let loanRequest of loanRequests; trackBy: trackByFn">
+                <div class="inventory-grid grid items-center gap-4 py-3 px-6 md:px-8 border-b">
+                  <!-- ID -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.id }}
+                  </div>
+
+                  <!-- Status -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.status }}
+                  </div>
+
+                  <!-- Fee -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.fee }}
+                  </div>
+
+                  <!-- Amount -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.amount }}
+                  </div>
+
+                  <!-- Due Date -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.dueDate | date: 'short' }}
+                  </div>
+
+                  <!-- Creation Date -->
+                  <div class="hidden md:block truncate">
+                    {{ loanRequest.createdDate | date: 'short' }}
+                  </div>
+
+                  <!-- Payment -->
+                  <!-- <div class="hidden md:block truncate">
+                    {{ loanRequest.paymentDTO.transactionAmount }}
+                  </div> -->
+
+                  <!-- Loan Product -->
+                  <!-- <div class="hidden md:block truncate">
+                    {{ loanRequest.loanProductId }}
+                  </div> -->
+
+                  <!-- User Profile -->
+                  <!-- <div class="hidden md:block truncate">
+                    {{ loanRequest.userId }}
+                  </div> -->
+
+                  <!-- Details button -->
+                  <div>
+                    <button class="min-w-10 min-h-7 h-7 px-2 leading-6" mat-stroked-button (click)="toggleDetails(loanRequest.id)">
+                      <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="
+                          selectedLoanRequest?.id === loanRequest.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'
+                        "
+                      ></mat-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="grid">
+                  <ng-container *ngIf="selectedLoanRequest?.id === loanRequest.id">
+                    <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: { $implicit: loanRequest }"></ng-container>
+                  </ng-container>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+
+          <mat-paginator
+            class="sm:absolute sm:inset-x-0 sm:bottom-0 border-b sm:border-t sm:border-b-0 z-10 bg-gray-50 dark:bg-transparent"
+            [ngClass]="{ 'pointer-events-none': isLoading }"
+            [length]="pagination.length"
+            [pageIndex]="pagination.page"
+            [pageSize]="pagination.size"
+            [pageSizeOptions]="[5, 10, 25, 100]"
+            [showFirstLastButtons]="true"
+          ></mat-paginator>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #rowDetailsTemplate let-loanRequest>
+        <div class="shadow-lg overflow-hidden">
+          <div class="flex border-b">
+            <!-- Selected loanRequest form -->
+            <form class="flex flex-col w-full" [formGroup]="selectedLoanRequestForm">
+              <div class="flex flex-col sm:flex-row p-8">
+                <div class="flex flex-auto flex-wrap">
+
+                  <div class="flex flex-col w-full lg:w-2/4 sm:pl-8">
+                    <!-- Loan Offer -->
+                    <mat-form-field class="w-full" formGroupName="loanProductDTO">
+                      <mat-label>Loan Product Name</mat-label>
+                      <input matInput [formControlName]="'serviceName'" readonly />
+                    </mat-form-field>
+
+                    <!-- Email -->
+                    <mat-form-field class="w-full" formGroupName="userProfileDTO">
+                      <mat-label>Customer Email</mat-label>
+                      <input matInput [formControlName]="'email'" readonly />
+                    </mat-form-field>
+                    
+                    <!-- Mobile -->
+                    <mat-form-field class="w-full" formGroupName="userProfileDTO">
+                      <mat-label>User Contact</mat-label>
+                      <input matInput [formControlName]="'phone'" readonly />
+                    </mat-form-field>
+
+                    <!-- Status -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Loan Status</mat-label>
+                      <input matInput [formControlName]="'status'" readonly />
+                    </mat-form-field>
+
+                    <!-- Fee -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Loan Fee</mat-label>
+
+                      <input matInput [formControlName]="'fee'" readonly />
+                    </mat-form-field>
+
+                    <!-- Amount -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Loan Amount </mat-label>
+
+                      <input matInput [formControlName]="'amount'" readonly />
+                    </mat-form-field>
+
+                    <!-- Due Date -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Due Date</mat-label>
+
+                      <input matInput [formControlName]="'dueDate'" [matDatepicker]="picker1" readonly />
+                      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                      <mat-datepicker #picker1></mat-datepicker>
+                    </mat-form-field>
+
+                    <!-- Submission Date -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Submission Date</mat-label>
+
+                      <input matInput [formControlName]="'createdDate'" [matDatepicker]="picker1" readonly />
+                      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                      <mat-datepicker #picker1></mat-datepicker>
+                    </mat-form-field>
+
+                    
+                    <!-- Payment Transaction ID -->
+                    <mat-form-field class="w-full" formGroupName = "paymentDTO">
+                      <mat-label>Payment TxID </mat-label>
+
+                      <input matInput [formControlName]="'transactionId'" readonly />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between w-full border-t px-8 py-4">
+                <div class="flex items-center">
+                  <div class="flex items-center mr-4" *ngIf="flashMessage">
+                    <ng-container *ngIf="flashMessage === 'success'">
+                      <mat-icon class="text-green-500" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                      <span class="ml-2">Request updated</span>
+                    </ng-container>
+                    <ng-container *ngIf="flashMessage === 'error'">
+                      <mat-icon class="text-red-500" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                      <span class="ml-2">An error occurred, try again!</span>
+                    </ng-container>
+                  </div>
+                  <button
+                    mat-flat-button
+                    [color]="'primary'"
+                    (click)="updateSelectedLoanRequest('CANCELED')"
+                    *ngIf="selectedLoanRequestForm.get('id').value !== -1 && selectedLoanRequestForm.get('status').value === 'INITIATED'"
+                  >
+                    Cancel Request
+                  </button>
+                  <button
+                    mat-flat-button
+                    [color]="'primary'"
+                    (click)="updateSelectedLoanRequest('CONFIRMED')"
+                    *ngIf="selectedLoanRequestForm.get('id').value !== -1 && getRole() === 'ROLE_ADMIN' && selectedLoanRequestForm.get('status').value === 'INITIATED'"
+                  >
+                    Confirm Request
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #noLoanRequests>
+        <div class="p-8 sm:p-16 border-t text-4xl font-semibold tracking-tight text-center">There are no loanRequests!</div>
+      </ng-template>
+    </div>
+  </div>
+</div>

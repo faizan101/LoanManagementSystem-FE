@@ -1,0 +1,201 @@
+<div class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-card dark:bg-transparent">
+  <!-- Header -->
+  <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8 border-b">
+    <!-- Loader -->
+    <div class="absolute inset-x-0 bottom-0" *ngIf="isLoading">
+      <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+    </div>
+    <!-- Title -->
+    <div class="text-4xl font-extrabold tracking-tight">Apply Loan Requests</div>
+    <!-- Actions -->
+    <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+      <!-- Search -->
+      <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:search'"></mat-icon>
+        <input matInput [formControl]="searchInputControl" [autocomplete]="'off'" [placeholder]="'Search applyLoanRequests'" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <!-- ApplyLoanRequests list -->
+    <div class="flex flex-col flex-auto sm:mb-18 overflow-hidden sm:overflow-y-auto">
+      <ng-container *ngIf="applyLoanRequests$ | async as applyLoanRequests">
+        <ng-container *ngIf="applyLoanRequests.length > 0; else noApplyLoanRequests">
+          <div class="grid">
+            <!-- Header -->
+            <div
+              class="inventory-grid z-10 sticky top-0 grid gap-4 py-4 px-6 md:px-8 shadow text-md font-semibold text-secondary bg-gray-50 dark:bg-black dark:bg-opacity-5"
+              matSort
+              matSortDisableClear
+            >
+              <div class="hidden md:block" [mat-sort-header]="'productId'">Product ID</div>
+              <div class="hidden md:block" [mat-sort-header]="'serviceName'">Loan Service</div>
+              <div class="hidden md:block" [mat-sort-header]="'duration'">Loan Payback Duration</div>
+              <div class="hidden md:block" [mat-sort-header]="'interestRate'">Interest Rate</div>
+              <div class="hidden md:block" [mat-sort-header]="'gracePeriod'">Grace Period</div>
+              <div class="hidden md:block" [mat-sort-header]="'maxAmount'">Max Loan Amount</div>
+              <div class="hidden md:block">Details</div>
+            </div>
+            <!-- Rows -->
+            <ng-container *ngIf="applyLoanRequests$ | async as applyLoanRequests">
+              <ng-container *ngFor="let applyLoanRequest of applyLoanRequests; trackBy: trackByFn">
+                <div class="inventory-grid grid items-center gap-4 py-3 px-6 md:px-8 border-b">
+                  <!-- productId -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.productId }}
+                  </div>
+
+                  <!-- serviceName -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.serviceName }}
+                  </div>
+
+                  <!-- duration -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.duration }}
+                  </div>
+
+                  <!-- interestRate -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.interestRate }}
+                  </div>
+
+                  <!-- gracePeriod -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.gracePeriod }}
+                  </div>
+
+                  <!-- maxAmount -->
+                  <div class="hidden md:block truncate">
+                    {{ applyLoanRequest.maxAmount }}
+                  </div>
+
+                  <!-- Details button -->
+                  <div>
+                    <button class="min-w-10 min-h-7 h-7 px-2 leading-6" mat-stroked-button (click)="toggleDetails(applyLoanRequest.productId)">
+                      <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="
+                          selectedApplyLoanRequest?.productId === applyLoanRequest.productId ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'
+                        "
+                      ></mat-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="grid">
+                  <ng-container *ngIf="selectedApplyLoanRequest?.productId === applyLoanRequest.productId">
+                    <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: { $implicit: applyLoanRequest }"></ng-container>
+                  </ng-container>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+
+          <mat-paginator
+            class="sm:absolute sm:inset-x-0 sm:bottom-0 border-b sm:border-t sm:border-b-0 z-10 bg-gray-50 dark:bg-transparent"
+            [ngClass]="{ 'pointer-events-none': isLoading }"
+            [length]="pagination.length"
+            [pageIndex]="pagination.page"
+            [pageSize]="pagination.size"
+            [pageSizeOptions]="[5, 10, 25, 100]"
+            [showFirstLastButtons]="true"
+          ></mat-paginator>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #rowDetailsTemplate let-applyLoanRequest>
+        <div class="shadow-lg overflow-hidden">
+          <div class="flex border-b">
+            <!-- Selected applyLoanRequest form -->
+            <form class="flex flex-col w-full" [formGroup]="selectedApplyLoanRequestForm">
+              <div class="flex flex-col sm:flex-row p-8">
+                <div class="flex flex-auto flex-wrap">
+                  <div class="flex flex-col w-full lg:w-2/4 sm:pl-8">
+                    <!-- productId -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Product ID</mat-label>
+                      <input matInput [formControlName]="'productId'" readonly />
+                    </mat-form-field>
+
+                    <!-- serviceName -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Service Name</mat-label>
+                      <input matInput [formControlName]="'serviceName'" readonly />
+                    </mat-form-field>
+
+                    <!-- serviceDescription -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Service Description</mat-label>
+
+                      <textarea matInput [rows]="1" matTextareaAutosize [formControlName]="'serviceDescription'" readonly></textarea>
+                    </mat-form-field>
+
+                    <!-- duration -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Duration</mat-label>
+
+                      <input matInput [formControlName]="'duration'" readonly />
+                    </mat-form-field>
+
+                    <!-- interestRate -->
+                    <mat-form-field class="w-full">
+                      <mat-label>InterestRate</mat-label>
+                      <input matInput [formControlName]="'interestRate'" type="number" readonly />
+                    </mat-form-field>
+
+                    <!-- gracePeriod -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Grace Period</mat-label>
+                      <input matInput [formControlName]="'gracePeriod'" type="number" readonly />
+                    </mat-form-field>
+
+                    <!-- maxAmount -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Max Loan Amount</mat-label>
+                      <input matInput [formControlName]="'maxAmount'" type="number" readonly />
+                    </mat-form-field>
+
+                    <!-- User Amount -->
+                    <mat-form-field class="w-full">
+                      <mat-label>Loan Amount</mat-label>
+                      <input matInput [formControlName]="'amount'" type="number" required />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between w-full border-t px-8 py-4">
+                <div class="flex items-center">
+                  <div class="flex items-center mr-4" *ngIf="flashMessage">
+                    <ng-container *ngIf="flashMessage === 'success'">
+                      <mat-icon class="text-green-500" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                      <span class="ml-2">Request updated</span>
+                    </ng-container>
+                    <ng-container *ngIf="flashMessage === 'error'">
+                      <mat-icon class="text-red-500" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                      <span class="ml-2">An error occurred, try again!</span>
+                    </ng-container>
+                  </div>
+                  <button
+                    mat-flat-button
+                    [color]="'primary'"
+                    (click)="updateSelectedApplyLoanRequest()"
+                    *ngIf="selectedApplyLoanRequestForm.get('productId').value !== -1"
+                  >
+                    Apply For Loan
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #noApplyLoanRequests>
+        <div class="p-8 sm:p-16 border-t text-4xl font-semibold tracking-tight text-center">Your are not eligible for new Loan Requests!</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
